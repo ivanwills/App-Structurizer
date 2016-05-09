@@ -69,13 +69,13 @@ sub main {
             :                               die "Can't determine file type from '$file'!\n";
     }
 
-    my $data = $option{type} eq 'perl' ? do $file;
+    my $data = $option{type} eq 'perl' ? do $file
         :   $option{type} eq 'json'    ? decode_json($file)
-        :                                die "Unknown data type '$type'!\n";
+        :                                die "Unknown data type '$option{type}'!\n";
 
     my $structurizer = App::Structurizer->new;
 
-    $structurizer->structure($data);
+    print $structurizer->structure($data);
 
     return;
 }
