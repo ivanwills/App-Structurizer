@@ -19,6 +19,7 @@ use English qw/ -no_match_vars /;
 use FindBin qw/$Bin/;
 use Path::Tiny;
 use App::Structurizer;
+use JSON::XS qw/decode_json/;
 
 our $VERSION = version->new('0.0.1');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
@@ -70,7 +71,7 @@ sub main {
     }
 
     my $data = $option{type} eq 'perl' ? do $file
-        :   $option{type} eq 'json'    ? decode_json($file)
+        :   $option{type} eq 'json'    ? decode_json(scalar path($file)->slurp)
         :                                die "Unknown data type '$option{type}'!\n";
 
     my $structurizer = App::Structurizer->new;
