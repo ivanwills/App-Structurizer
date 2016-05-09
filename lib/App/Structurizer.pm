@@ -39,8 +39,8 @@ sub structure {
     elsif ( ref $data eq 'ARRAY' ) {
         for my $key ( 0 .. @$data - 1 ) {
             $out .= "$prefix$key\n";
-            if ( ref $data->{$key} ) {
-                $out .= $self->structure($data->{$key}, "$prefix+ ");
+            if ( ref $data->[$key] ) {
+                $out .= $self->structure($data->[$key], "$prefix+ ");
             }
         }
     }
