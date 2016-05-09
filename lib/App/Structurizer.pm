@@ -1,12 +1,12 @@
 package App::Structurizer;
 
-# Created on: 2016-05-09 17:27:47
+# Created on: 2016-05-09 17:36:22
 # Create by:  Ivan Wills
 # $Id$
 # $Revision$, $HeadURL$, $Date$
 # $Revision$, $Source$, $Date$
 
-use strict;
+use Moo;
 use warnings;
 use version;
 use Carp;
@@ -15,26 +15,41 @@ use List::Util;
 #use List::MoreUtils;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
-use base qw/Some::Thing/;
+
+our $VERSION = version->new('0.0.1');
 
 
-our $VERSION     = version->new('0.0.1');
-our @EXPORT_OK   = qw//;
-our %EXPORT_TAGS = ();
-#our @EXPORT      = qw//;
 
-sub new {
-	my $caller = shift;
-	my $class  = ref $caller ? ref $caller : $caller;
-	my %param  = @_;
-	my $self   = \%param;
+sub structure {
+    my ($self, $data, $prefix) = @_;
+    my $out = '';
+    $prefix //= '';
 
-	bless $self, $class;
+    if ( !ref $data ) {
+        return;
+    }
+    elsif ( ref $data eq 'HASH' ) {
+        for my $key ( sort keys %$data ) {
+            $out .= "$prefix$key\n";
+            if ( ref $data->{$key} ) {
+                $out .= $self->structure($data->{$key}, "$prefix+ ");
+            }
+        }
+    }
+    elsif ( ref $data eq 'ARRAY' ) {
+        for my $key ( 0 .. @$data - 1 ) {
+            $out .= "$prefix$key\n";
+            if ( ref $data->{$key} ) {
+                $out .= $self->structure($data->{$key}, "$prefix+ ");
+            }
+        }
+    }
+    else {
+        return;
+    }
 
-	return $self;
+    return $out;
 }
-
-
 
 1;
 
