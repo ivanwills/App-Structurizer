@@ -18,12 +18,17 @@ use English qw/ -no_match_vars /;
 
 our $VERSION = version->new('0.0.1');
 
-
+has depth     => ( is => 'rw', default => 0 );
+has array_max => ( is => 'rw', default => 0 );
 
 sub structure {
     my ($self, $data, $prefix) = @_;
     my $out = '';
     $prefix //= '';
+
+    if ( $self->depth && length $prefix > $self->depth * 2 ) {
+        return "$prefix...\n";
+    }
 
     if ( !ref $data ) {
         return;
@@ -37,11 +42,20 @@ sub structure {
         }
     }
     elsif ( ref $data eq 'ARRAY' ) {
-        for my $key ( 0 .. @$data - 1 ) {
+        my $last = '';
+        my $max  = !$self->array_max || @$data <= $self->array_max ? @$data : $self->array_max;
+
+        for my $key ( 0 .. $max - 1 ) {
             $out .= "$prefix$key\n";
             if ( ref $data->[$key] ) {
-                $out .= $self->structure($data->[$key], "$prefix+ ");
+                my $next = $self->structure($data->[$key], "$prefix+ ");
+                $out .= $last eq $next ? "...\n" : $next;
+                $last = $next;
             }
+        }
+
+        if ( $self->array_max && @$data > $self->array_max ) {
+            $out .= "$prefix$max ... " . (@$data - 1) . "\n";
         }
     }
     else {
