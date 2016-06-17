@@ -20,10 +20,16 @@ our $VERSION = version->new('0.0.1');
 
 has depth     => ( is => 'rw', default => 0 );
 has array_max => ( is => 'rw', default => 0 );
+has hash_max  => ( is => 'rw', default => 0 );
+has end_char  => ( is => 'rw', default => '  ' );
+has mid_char  => ( is => 'rw', default => '├─' );
 
 sub structure {
     my ($self, $data, $prefix) = @_;
     my $out = '';
+    my $end = $self->end_char;
+    my $mid = $self->mid_char;
+
     $prefix //= '';
 
     if ( $self->depth && length $prefix > $self->depth * 2 ) {
@@ -34,10 +40,16 @@ sub structure {
         return;
     }
     elsif ( ref $data eq 'HASH' ) {
-        for my $key ( sort keys %$data ) {
+        my @keys =  sort keys %$data;
+        my $max  = !$self->hash_max || @keys <= $self->hash_max ? @keys : $self->hash_max;
+
+        for my $i ( 0 .. $max - 1 ) {
+            my $key  = $keys[$i];
+            my $char = $i < $max - 2 ? $mid : $end;
+
             $out .= "$prefix$key\n";
             if ( ref $data->{$key} ) {
-                $out .= $self->structure($data->{$key}, "$prefix+ ");
+                $out .= $self->structure($data->{$key}, "$prefix$mid ");
             }
         }
     }
@@ -46,9 +58,11 @@ sub structure {
         my $max  = !$self->array_max || @$data <= $self->array_max ? @$data : $self->array_max;
 
         for my $key ( 0 .. $max - 1 ) {
-            $out .= "$prefix$key\n";
+            my $char = $key < $max - 1 ? $mid : $end;
+
+            $out .= "$prefix\[$key]\n";
             if ( ref $data->[$key] ) {
-                my $next = $self->structure($data->[$key], "$prefix+ ");
+                my $next = $self->structure($data->[$key], "$prefix$char ");
                 $out .= $last eq $next ? "...\n" : $next;
                 $last = $next;
             }
